@@ -94,7 +94,7 @@ lastfm::Fingerprint::data() const
 
 
 void
-lastfm::Fingerprint::generate( FingerprintableSource* ms ) throw( Error )
+lastfm::Fingerprint::generate( FingerprintableSource* ms )
 {
     //TODO throw if we can't get required metadata from the track object
     
@@ -306,7 +306,7 @@ lastfm::Fingerprint::submit() const
 
 
 void
-lastfm::Fingerprint::decode( QNetworkReply* reply, bool* complete_fingerprint_requested ) throw( Error )
+lastfm::Fingerprint::decode( QNetworkReply* reply, bool* complete_fingerprint_requested )
 {
     // The response data will consist of a number and a string.
     // The number is the fpid and the string is either FOUND or NEW

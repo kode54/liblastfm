@@ -71,7 +71,7 @@ namespace lastfm
         };
 
         /** This is CPU intensive, do it in a thread in your GUI application */
-        void generate( FingerprintableSource* ) throw( Error );
+        void generate( FingerprintableSource* );
 
         /** Submits the fingerprint data to Last.fm in order to get a FingerprintId
           * back. You need to wait for the QNetworkReply to finish before you can
@@ -82,7 +82,7 @@ namespace lastfm
           * will be valid. Otherwise we will throw. You always get a valid id
           * or a throw.
           */
-        void decode( QNetworkReply*, bool* lastfm_needs_a_complete_fingerprint = 0 ) throw( Error );
+        void decode( QNetworkReply*, bool* lastfm_needs_a_complete_fingerprint = 0 );
     };
 
 
