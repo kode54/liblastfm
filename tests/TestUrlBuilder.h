@@ -81,7 +81,7 @@ private slots:
 
     void test404() /** @author <max@last.fm> */
     {
-        QCOMPARE( getResponseCode( QUrl("http://www.last.fm/404") ), 404 );
+        QCOMPARE( getResponseCode( QUrl("https://www.last.fm/404") ), 404 );
     }
 };
 
