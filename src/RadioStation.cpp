@@ -21,7 +21,6 @@
 #include "XmlQuery.h"
 
 #include <QDebug>
-#include <QRegExp>
 #include <QStringList>
 
 

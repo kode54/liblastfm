@@ -25,6 +25,7 @@
 
 #include <QStringList>
 #include <QAbstractNetworkCache>
+#include <QRegularExpression>
 #include <QDebug>
 
 using lastfm::Gender;
@@ -366,7 +367,7 @@ User::imageUrl( ImageSize size, bool square ) const
     if( !square ) return d->m_images.value( size );
 
     QUrl url = d->m_images.value( size );
-    QRegExp re( "/serve/(\\d*)s?/" );
+    QRegularExpression re( "/serve/(\\d*)s?/" );
     return QUrl( url.toString().replace( re, "/serve/\\1s/" ));
 }
 
