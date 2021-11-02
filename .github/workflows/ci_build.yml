@@ -20,7 +20,7 @@ jobs:
 
     strategy:
       matrix:
-        qt-version: [5.15.2 6.2.1]
+        qt-version: [5.15.2, 6.2.1]
 
     steps:
     - name: Install Qt
