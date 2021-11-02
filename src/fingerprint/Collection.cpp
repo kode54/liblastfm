@@ -199,8 +199,8 @@ Collection::query( const QString& queryToken )
 
     if ( query.lastError().isValid() )
     {
-        qDebug() << "SQL query failed:" << query.lastQuery() << endl
-                 << "SQL error was:"    << query.lastError().databaseText() << endl
+        qDebug() << "SQL query failed:" << query.lastQuery() << '\n'
+                 << "SQL error was:"    << query.lastError().databaseText() << '\n'
                  << "SQL error type:"   << query.lastError().type();
 
         return false;
@@ -233,8 +233,8 @@ Collection::getFingerprintId( const QString& filePath )
     query.exec();
     if ( query.lastError().isValid() )
     {
-        qDebug() << "SQL query failed:" << query.lastQuery() << endl
-                 << "SQL error was:"    << query.lastError().databaseText() << endl
+        qDebug() << "SQL query failed:" << query.lastQuery() << '\n'
+                 << "SQL error was:"    << query.lastError().databaseText() << '\n'
                  << "SQL error type:"   << query.lastError().type();
     }
     else if (query.next())
@@ -259,8 +259,8 @@ Collection::setFingerprintId( const QString& filePath, QString fpId )
 
     if ( query.lastError().isValid() )
     {
-        qDebug() << "SQL query failed:" << query.lastQuery() << endl
-                 << "SQL error was:"    << query.lastError().databaseText() << endl
+        qDebug() << "SQL query failed:" << query.lastQuery() << '\n'
+                 << "SQL error was:"    << query.lastError().databaseText() << '\n'
                  << "SQL error type:"   << query.lastError().type();
 
         return false;
