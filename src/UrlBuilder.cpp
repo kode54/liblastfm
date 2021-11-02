@@ -74,7 +74,7 @@ lastfm::UrlBuilder::encode( QString s )
         if (s.contains( c ))
             // the middle step may seem odd but this is what the site does
             // eg. search for the exact string "Radiohead 2 + 2 = 5"
-            return QUrl::toPercentEncoding( s ).replace( "%20", "+" ).toPercentEncoding( "", "+" );;
+            return QUrl::toPercentEncoding( s ).replace( "%20", "+" );
 
     return QUrl::toPercentEncoding( s.replace( ' ', '+' ), "+" );
 }
