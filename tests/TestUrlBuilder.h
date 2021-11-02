@@ -53,7 +53,7 @@ private slots:
         QTest::newRow( "ascii" ) << "Metallica" << "Metallica";
         QTest::newRow( "ascii alphanumeric" ) << "Apollo 440" << "Apollo+440";
         QTest::newRow( "ascii with symbols" ) << "some track [original version]" << "some+track+%5Boriginal+version%5D";
-        QTest::newRow( "ascii with last.fm-special symbols" ) << "Survivalism [Revision #1]" << "Survivalism%2B%255BRevision%2B%25231%255D";
+        QTest::newRow( "ascii with last.fm-special symbols" ) << "Survivalism [Revision #1]" << "Survivalism+%5BRevision+%231%5D";
     }
 
     void no404() /** @author <max@last.fm> */
