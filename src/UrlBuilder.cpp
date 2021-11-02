@@ -59,10 +59,8 @@ lastfm::UrlBuilder::slash( const QString& path )
 QUrl
 lastfm::UrlBuilder::url() const
 {
-    QUrl url;
-    url.setScheme( "http" );
-    url.setHost( host() );
-    url.setPath( d->path );
+    QUrl url( "https://" + host() );
+    url.setPath( url.path() + d->path );
     return url;
 }
 
@@ -74,7 +72,7 @@ lastfm::UrlBuilder::encode( QString s )
         if (s.contains( c ))
             // the middle step may seem odd but this is what the site does
             // eg. search for the exact string "Radiohead 2 + 2 = 5"
-            return QUrl::toPercentEncoding( s ).replace( "%20", "+" ).toPercentEncoding( "", "+" );;
+            return QUrl::toPercentEncoding( s ).replace( "%20", "+" );
 
     return QUrl::toPercentEncoding( s.replace( ' ', '+' ), "+" );
 }
@@ -85,17 +83,17 @@ lastfm::UrlBuilder::host( const QLocale& locale )
 {
     switch (locale.language())
     {
-        case QLocale::Portuguese: return "www.lastfm.com.br";
-        case QLocale::Turkish:    return "www.lastfm.com.tr";
-        case QLocale::French:     return "www.lastfm.fr";
-        case QLocale::Italian:    return "www.lastfm.it";
-        case QLocale::German:     return "www.lastfm.de";
-        case QLocale::Spanish:    return "www.lastfm.es";
-        case QLocale::Polish:     return "www.lastfm.pl";
-        case QLocale::Russian:    return "www.lastfm.ru";
-        case QLocale::Japanese:   return "www.lastfm.jp";
-        case QLocale::Swedish:    return "www.lastfm.se";
-        case QLocale::Chinese:    return "cn.last.fm";
+        case QLocale::Portuguese: return "www.last.fm/pt";
+        case QLocale::Turkish:    return "www.last.fm/tr";
+        case QLocale::French:     return "www.last.fm/fr";
+        case QLocale::Italian:    return "www.last.fm/it";
+        case QLocale::German:     return "www.last.fm/de";
+        case QLocale::Spanish:    return "www.last.fm/es";
+        case QLocale::Polish:     return "www.last.fm/pl";
+        case QLocale::Russian:    return "www.last.fm/ru";
+        case QLocale::Japanese:   return "www.last.fm/jp";
+        case QLocale::Swedish:    return "www.last.fm/se";
+        case QLocale::Chinese:    return "www.last.fm/zh";
         default:                  return "www.last.fm";
     }
 }
@@ -104,18 +102,7 @@ lastfm::UrlBuilder::host( const QLocale& locale )
 bool // static
 lastfm::UrlBuilder::isHost( const QUrl& url )
 {
-    QStringList hosts = QStringList() << "www.lastfm.com.br"
-                    <<  "www.lastfm.com.tr"
-                    << "www.lastfm.fr"
-                    << "www.lastfm.it"
-                    << "www.lastfm.de"
-                    << "www.lastfm.es"
-                    << "www.lastfm.pl"
-                    << "www.lastfm.ru"
-                    << "www.lastfm.jp"
-                    << "www.lastfm.se"
-                    << "cn.last.fm"
-                    << "www.last.fm";
+    QStringList hosts = QStringList() << "www.last.fm";
 
     return hosts.contains( url.host() );
 }

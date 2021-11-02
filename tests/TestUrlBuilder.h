@@ -52,8 +52,8 @@ private slots:
 
         QTest::newRow( "ascii" ) << "Metallica" << "Metallica";
         QTest::newRow( "ascii alphanumeric" ) << "Apollo 440" << "Apollo+440";
-        QTest::newRow( "ascii with symbols" ) << "some track [original version]" << "some+track+%5Boriginal+version%5D";
-        QTest::newRow( "ascii with last.fm-special symbols" ) << "Survivalism [Revision #1]" << "Survivalism%2B%255BRevision%2B%25231%255D";
+        QTest::newRow( "ascii with symbols" ) << "Would?" << "Would%3F";
+        QTest::newRow( "ascii with last.fm-special symbols" ) << "Survivalism [Revision #1]" << "Survivalism+%5BRevision+%231%5D";
     }
 
     void no404() /** @author <max@last.fm> */
@@ -76,12 +76,14 @@ private slots:
         NEW_ROW( "Pink Floyd", "Speak to Me / Breathe" );
         NEW_ROW( "Radiohead", "2 + 2 = 5" );
         NEW_ROW( "Above & Beyond", "World On Fire (Maor Levi Remix)" );
+        NEW_ROW( "Kreş", "Portret Nieświadomości" );
+        NEW_ROW( "자우림", "스물다섯, 스물하나" );
         #undef NEW_ROW
     }
 
     void test404() /** @author <max@last.fm> */
     {
-        QCOMPARE( getResponseCode( QUrl("http://www.last.fm/404") ), 404 );
+        QCOMPARE( getResponseCode( QUrl("https://www.last.fm/404") ), 404 );
     }
 };
 
