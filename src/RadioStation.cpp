@@ -94,7 +94,7 @@ lastfm::RadioStation::library( const lastfm::User& user )
 lastfm::RadioStation
 lastfm::RadioStation::library( QList<lastfm::User>& users )
 {
-    qSort(users.begin(), users.end());
+    std::sort(users.begin(), users.end());
 
     QString url = (users.count() > 1) ? "lastfm://users/" : "lastfm://user/";
 
@@ -156,7 +156,7 @@ lastfm::RadioStation::tag( const lastfm::Tag& tag )
 lastfm::RadioStation
 lastfm::RadioStation::tag( QList<lastfm::Tag>& tag )
 {
-    qSort(tag.begin(), tag.end());
+    std::sort(tag.begin(), tag.end());
 
     QString url = (tag.count() > 1) ? "lastfm://tag/" : "lastfm://globaltags/";
 
@@ -181,7 +181,7 @@ lastfm::RadioStation::similar( const lastfm::Artist& artist )
 lastfm::RadioStation
 lastfm::RadioStation::similar( QList<lastfm::Artist>& artists )
 {
-    qSort(artists.begin(), artists.end());
+    std::sort(artists.begin(), artists.end());
 
     QString url = (artists.count() > 1) ? "lastfm://artistnames/" : "lastfm://artist/";
 

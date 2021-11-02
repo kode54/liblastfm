@@ -27,6 +27,7 @@
 #include <QDebug>
 #include <QRegExp>
 #include <QStringList>
+#include <QMultiMap>
 
 using lastfm::Artist;
 using lastfm::ArtistData;
@@ -209,7 +210,7 @@ Artist::search( int limit ) const
 QMap<int, QString> /* static */
 Artist::getSimilar( QNetworkReply* r )
 {
-    QMap<int, QString> artists;
+    QMultiMap<int, QString> artists;
 
     XmlQuery lfm;
 
@@ -219,14 +220,14 @@ Artist::getSimilar( QNetworkReply* r )
         {
             // convert floating percentage to int in range 0 to 10,000
             int const match = e["match"].text().toFloat() * 100;
-            artists.insertMulti( match, e["name"].text() );
+            artists.insert( match, e["name"].text() );
         }
     }
     else
     {
         qWarning() << lfm.parseError().message();
     }
-    return artists;
+    return QMap<int, QString>(artists);
 }
 
 

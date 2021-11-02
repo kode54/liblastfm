@@ -27,6 +27,7 @@
 #include <QFileInfo>
 #include <QStringList>
 #include <QAbstractNetworkCache>
+#include <QMultiMap>
 #include <QDebug>
 
 
@@ -680,7 +681,7 @@ lastfm::Track::getSimilar( int limit ) const
 QMap<int, QPair< QString, QString > > /* static */
 lastfm::Track::getSimilar( QNetworkReply* r )
 {
-    QMap<int, QPair< QString, QString > > tracks;
+    QMultiMap<int, QPair< QString, QString > > tracks;
     try
     {
         XmlQuery lfm;
@@ -697,7 +698,7 @@ lastfm::Track::getSimilar( QNetworkReply* r )
 
                 // convert floating percentage to int in range 0 to 10,000
                 int const match = e["match"].text().toFloat() * 100;
-                tracks.insertMulti( match, track );
+                tracks.insert( match, track );
             }
         }
     }
@@ -706,7 +707,7 @@ lastfm::Track::getSimilar( QNetworkReply* r )
         qWarning() << e.message();
     }
     
-    return tracks;
+    return QMap<int, QPair< QString, QString > >(tracks);
 }
 
 
