@@ -64,9 +64,9 @@ endif()
 
 add_library(${LASTFM_LIB_TARGET_NAME} SHARED ${liblastfm_SOURCES})
 
-target_link_libraries(${LASTFM_LIB_TARGET_NAME} Qt5::Network Qt5::Xml)
+target_link_libraries(${LASTFM_LIB_TARGET_NAME} Qt::Network Qt::Xml)
 if(UNIX AND NOT APPLE)
-    target_link_libraries(${LASTFM_LIB_TARGET_NAME} Qt5::DBus)
+    target_link_libraries(${LASTFM_LIB_TARGET_NAME} Qt::DBus)
 endif()
 
 if(WIN32 AND NOT MINGW)
