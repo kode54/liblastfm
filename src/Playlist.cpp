@@ -67,7 +67,7 @@ lastfm::Playlist::addTrack( const Track& t ) const
 {
     QMap<QString, QString> map;
     map["method"] = "playlist.addTrack";
-    map["playlistID"] = d->id;
+    map["playlistID"] = QString::number(d->id);
     map["artist"] = t.artist();
     map["track"] = t.title();
     return lastfm::ws::post(map);
