@@ -76,6 +76,8 @@ private slots:
         NEW_ROW( "Pink Floyd", "Speak to Me / Breathe" );
         NEW_ROW( "Radiohead", "2 + 2 = 5" );
         NEW_ROW( "Above & Beyond", "World On Fire (Maor Levi Remix)" );
+        NEW_ROW( "Kreş", "Portret Nieświadomości" );
+        NEW_ROW( "자우림", "스물다섯, 스물하나" );
         #undef NEW_ROW
     }
 
