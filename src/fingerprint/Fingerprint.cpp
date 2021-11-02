@@ -277,7 +277,7 @@ lastfm::Fingerprint::submit() const
     url.addQueryItem( "fileextension", fi.completeSuffix() );
     url.addQueryItem( "tracknum", number( t.trackNumber() ) );
     url.addQueryItem( "sha256", sha256( path ) );
-    url.addQueryItem( "time", number(QDateTime::currentDateTime().toTime_t()) );
+    url.addQueryItem( "time", number(QDateTime::currentDateTime().toMSecsSinceEpoch() / 1000) );
     url.addQueryItem( "fpversion", QByteArray::number((int)fingerprint::FingerprintExtractor::getVersion()) );
     url.addQueryItem( "fulldump", d->m_complete ? "true" : "false" );
     url.addQueryItem( "noupdate", "false" );

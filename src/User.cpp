@@ -249,7 +249,7 @@ User::User( const XmlQuery& xml )
 
     d->m_age = xml["age"].text().toUInt();
     d->m_scrobbles = xml["playcount"].text().toUInt();
-    d->m_registered = QDateTime::fromTime_t(xml["registered"].attribute("unixtime").toUInt());
+    d->m_registered = QDateTime::fromMSecsSinceEpoch(xml["registered"].attribute("unixtime").toUInt() * 1000);
     d->m_country = xml["country"].text();
     d->m_isSubscriber = ( xml["subscriber"].text() == "1" );
     d->m_canBootstrap = ( xml["bootstrap"].text() == "1" );

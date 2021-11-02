@@ -254,7 +254,7 @@ lastfm::Track::Track( const QDomElement& e )
     d->url = e.namedItem( "url" ).toElement().text();
     d->rating = e.namedItem( "rating" ).toElement().text().toUInt();
     d->source = e.namedItem( "source" ).toElement().text().toInt(); //defaults to 0, or lastfm::Track::UnknownSource
-    d->time = QDateTime::fromTime_t( e.namedItem( "timestamp" ).toElement().text().toUInt() );
+    d->time = QDateTime::fromMSecsSinceEpoch( e.namedItem( "timestamp" ).toElement().text().toUInt() * 1000 );
     d->loved = static_cast<LoveStatus>(e.namedItem( "loved" ).toElement().text().toInt());
     d->scrobbleStatus = e.namedItem( "scrobbleStatus" ).toElement().text().toInt();
     d->scrobbleError = e.namedItem( "scrobbleError" ).toElement().text().toInt();
@@ -429,7 +429,7 @@ lastfm::Track::toDomElement( QDomDocument& xml ) const
     makeElement( "correctedAlbum", d->correctedAlbum );
     makeElement( "correctedTrack", d->correctedTitle );
     makeElement( "duration", QString::number( d->duration ) );
-    makeElement( "timestamp", QString::number( d->time.toTime_t() ) );
+    makeElement( "timestamp", QString::number( d->time.toMSecsSinceEpoch() / 1000 ) );
     makeElement( "url", d->url.toString() );
     makeElement( "source", QString::number( d->source ) );
     makeElement( "rating", QString::number(d->rating) );
@@ -838,7 +838,7 @@ lastfm::Track::scrobble() const
 {
     QMap<QString, QString> map = params("scrobble");
     map["duration"] = QString::number( d->duration );
-    map["timestamp"] = QString::number( d->time.toTime_t() );
+    map["timestamp"] = QString::number( d->time.toMSecsSinceEpoch() / 1000 );
     map["context"] = extra("playerId");
     map["albumArtist"] = d->albumArtist;
     if ( !d->album.title().isEmpty() ) map["album"] = d->album.title();
@@ -856,7 +856,7 @@ lastfm::Track::scrobble(const QList<lastfm::Track>& tracks)
     for ( int i(0) ; i < tracks.count() ; ++i )
     {
         map["duration[" + QString::number(i) + "]"] = QString::number( tracks[i].duration() );
-        map["timestamp[" + QString::number(i)  + "]"] = QString::number( tracks[i].timestamp().toTime_t() );
+        map["timestamp[" + QString::number(i)  + "]"] = QString::number( tracks[i].timestamp().toMSecsSinceEpoch() / 1000 );
         map["track[" + QString::number(i)  + "]"] = tracks[i].title();
         map["context[" + QString::number(i)  + "]"] = tracks[i].extra("playerId");
         if ( !tracks[i].album().isNull() ) map["album[" + QString::number(i)  + "]"] = tracks[i].album();
