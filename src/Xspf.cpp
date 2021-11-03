@@ -63,7 +63,7 @@ lastfm::Xspf::Xspf( const QDomElement& playlist_node, QObject* parent )
         t.setDuration( e["duration"].text().toInt() / 1000 );
         t.setLoved( e["extension"]["loved"].text() == "1" );
         t.setSource( Track::LastFmRadio );
-        t.setExtra( "expiry", QString::number( QDateTime::currentDateTime().addSecs( expirySeconds ).toTime_t() ) );
+        t.setExtra( "expiry", QString::number( QDateTime::currentDateTime().addSecs( expirySeconds ).toMSecsSinceEpoch() / 1000) );
         t.setExtra( "playlistTitle", d->title );
 
         QList<QString> contexts;

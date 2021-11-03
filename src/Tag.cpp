@@ -23,7 +23,6 @@
 #include "XmlQuery.h"
 #include "ws.h"
 
-#include <QMultiMap>
 #include <QDebug>
 
 using lastfm::Tag;
@@ -117,7 +116,7 @@ Tag::getTopTags()
 QMap<int, QString> //static
 Tag::list( QNetworkReply* r )
 {
-    QMultiMap<int, QString> tags;
+    QMap<int, QString> tags;
 
     XmlQuery lfm;
 
@@ -128,7 +127,7 @@ Tag::list( QNetworkReply* r )
             // we toLower always as otherwise it is ugly mixed case, as first
             // ever tag decides case, and Last.fm is case insensitive about it 
             // anyway
-            tags.insert( xq["count"].text().toInt(), xq["name"].text().toLower() );
+            tags.insert( xq["count"].text().toInt(), xq["name"].text().toLower() ); // FIXME values with the same key will be overwritten, switch to QMultiMap
     }
     else
     {

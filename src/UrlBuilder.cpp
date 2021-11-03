@@ -18,7 +18,7 @@
    along with liblastfm.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "UrlBuilder.h"
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QStringList>
 
 
@@ -110,7 +110,7 @@ lastfm::UrlBuilder::isHost( const QUrl& url )
 QUrl //static
 lastfm::UrlBuilder::localize( QUrl url)
 {
-    url.setHost( url.host().replace( QRegExp("^(www.)?last.fm"), host() ) );
+    url.setHost( url.host().replace( QRegularExpression("^(www.)?last.fm"), host() ) );
     return url;
 }
 
@@ -118,7 +118,7 @@ lastfm::UrlBuilder::localize( QUrl url)
 QUrl //static
 lastfm::UrlBuilder::mobilize( QUrl url )
 {
-    url.setHost( url.host().replace( QRegExp("^(www.)?last"), "m.last" ) );
+    url.setHost( url.host().replace( QRegularExpression("^(www.)?last"), "m.last" ) );
     return url;
 }
 

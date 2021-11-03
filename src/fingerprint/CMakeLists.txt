@@ -29,7 +29,7 @@ target_link_libraries(${FINGERPRINT_LIB_TARGET_NAME}
     PkgConfig::FFTW3F
 )
 
-target_link_libraries(${FINGERPRINT_LIB_TARGET_NAME} Qt5::Network Qt5::Sql Qt5::Xml)
+target_link_libraries(${FINGERPRINT_LIB_TARGET_NAME} Qt::Network Qt::Sql Qt::Xml)
 
 install(TARGETS ${FINGERPRINT_LIB_TARGET_NAME}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}

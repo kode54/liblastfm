@@ -268,7 +268,7 @@ RadioTuner::queueTrack( lastfm::Track& track )
 bool
 trackExpired( const Track& track )
 {
-    return (!track.extra( "expiry" ).isEmpty()) && QDateTime::currentDateTime() > QDateTime::fromTime_t( track.extra( "expiry" ).toInt() );
+    return (!track.extra( "expiry" ).isEmpty()) && QDateTime::currentDateTime() > QDateTime::fromMSecsSinceEpoch( track.extra( "expiry" ).toInt() * 1000 );
 }
 
 Track

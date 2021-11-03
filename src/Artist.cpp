@@ -25,9 +25,8 @@
 #include "ws.h"
 
 #include <QDebug>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QStringList>
-#include <QMultiMap>
 
 using lastfm::Artist;
 using lastfm::ArtistData;
@@ -94,7 +93,7 @@ Artist::imageUrl( ImageSize size, bool square ) const
     if( !square ) return d->images.value( size );
 
     QUrl url = d->images.value( size );
-    QRegExp re( "/serve/(\\d*)s?/" );
+    QRegularExpression re( "/serve/(\\d*)s?/" );
     return QUrl( url.toString().replace( re, "/serve/\\1s/" ));
 }
 
@@ -210,7 +209,7 @@ Artist::search( int limit ) const
 QMap<int, QString> /* static */
 Artist::getSimilar( QNetworkReply* r )
 {
-    QMultiMap<int, QString> artists;
+    QMap<int, QString> artists;
 
     XmlQuery lfm;
 
@@ -220,14 +219,14 @@ Artist::getSimilar( QNetworkReply* r )
         {
             // convert floating percentage to int in range 0 to 10,000
             int const match = e["match"].text().toFloat() * 100;
-            artists.insert( match, e["name"].text() );
+            artists.insert( match, e["name"].text() ); // FIXME values with the same key will be overwritten, switch to QMultiMap
         }
     }
     else
     {
         qWarning() << lfm.parseError().message();
     }
-    return QMap<int, QString>(artists);
+    return artists;
 }
 
 
