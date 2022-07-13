@@ -793,6 +793,7 @@ void src_float_to_mono_array( const float *in, float *out, int srclen, int nchan
       break;
    default:
       {
+         srclen /= nchannels;
          cblas_scopy(srclen, in, nchannels, out, 1);
          for(int n = 1; n < nchannels; n++)
          {

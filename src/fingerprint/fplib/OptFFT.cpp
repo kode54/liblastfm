@@ -226,8 +226,8 @@ int OptFFT::process(float* pInData, const size_t dataSize)
       vDSP_DFT_Execute(m_p, m_pOut[i].realp, m_pOut[i].imagp, m_pOut[i].realp, m_pOut[i].imagp);
 
       // scaling (?)
-      vDSP_vsdiv(m_pOut[i].realp, 1, &scalingFactor, m_pOut[i].realp, 1, FRAMESIZE);
-      vDSP_vsdiv(m_pOut[i].imagp, 1, &scalingFactor, m_pOut[i].imagp, 1, FRAMESIZE);
+      vDSP_vsdiv(m_pOut[i].realp, 1, &scalingFactor, m_pOut[i].realp, 1, FRAMESIZE / 2);
+      vDSP_vsdiv(m_pOut[i].imagp, 1, &scalingFactor, m_pOut[i].imagp, 1, FRAMESIZE / 2);
 
       pIn_It += FRAMESIZE;
    }
