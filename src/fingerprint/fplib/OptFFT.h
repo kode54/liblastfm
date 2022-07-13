@@ -19,7 +19,7 @@
 #ifndef __OPT_FFT_H
 #define __OPT_FFT_H
 
-#include <fftw3.h>
+#include <Accelerate/Accelerate.h>
 #include <vector>
 
 namespace fingerprint
@@ -42,9 +42,10 @@ private:
 
    void applyHann(float* pInData, const size_t dataSize);
 
-    fftwf_plan        m_p;
-    fftwf_complex *   m_pOut;
-    float*            m_pIn;
+   vDSP_DFT_Setup    m_p;
+
+   DSPSplitComplex * m_pOut;
+   float*            m_pIn;
 
    //float   m_base;
 
@@ -53,6 +54,8 @@ private:
 
    float** m_pFrames;
    int     m_maxFrames;
+
+   float*  m_hann;
 
    std::vector<int> m_powTable;
 
