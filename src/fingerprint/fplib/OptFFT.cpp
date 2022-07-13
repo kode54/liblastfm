@@ -47,7 +47,7 @@ static void *_memalign_malloc(size_t size, size_t align) {
 
 static int _malloc_complex(DSPSplitComplex *out, size_t count) {
    out->realp = static_cast<float *>( _memalign_malloc( sizeof(float) * count, 16 ) );
-   out->imagp = static_cast<float *<( _memalign_malloc( sizeof(float) * count, 16 ) );
+   out->imagp = static_cast<float *>( _memalign_malloc( sizeof(float) * count, 16 ) );
    if( out->realp && out->imagp ) return 0;
    else return -1;
 }
