@@ -25,7 +25,9 @@
 #include <cmath>
 #include <cstring>
 
-#include <samplerate.h> // libsamplerate
+#include <Accelerate/Accelerate.h>
+
+#include "r8bstate.h"
 
 #include "FingerprintExtractor.h"
 #include "fp_helper_fun.h" // for GroupData
@@ -91,7 +93,7 @@ public:
       m_pDownsampledPCM = NULL;
 
       if ( m_pDownsampleState )
-         src_delete(m_pDownsampleState) ;
+         r8bstate_delete(m_pDownsampleState) ;
 
    }
 
@@ -108,9 +110,8 @@ public:
 
    //////////////////////////////////////////////////////////////////////////
    
-   // libsamplerate
-   SRC_STATE*              m_pDownsampleState;
-   SRC_DATA                m_downsampleData;
+   // r8brain
+   void*                   m_pDownsampleState;
 
    vector<float>           m_floatInData;
 
@@ -130,7 +131,7 @@ public:
 
    float*                 m_pEndDownsampledBuf;
 
-   int m_freq;
+   double m_freq;
    int m_nchannels;
 
    unsigned int m_lengthMs;
@@ -162,7 +163,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
 void initCustom( PimplData& pd,
-                 int freq, int nchannels,
+                 double freq, int nchannels,
                  unsigned int lengthMs, unsigned int skipMs,
                  int minUniqueKeys, unsigned int uniqueKeyWindowMs, int duration );
 
@@ -174,7 +175,7 @@ void         computeBits( vector<unsigned int>& bits,
                           float ** frames, unsigned int nframes );
 
 
-void src_short_to_float_and_mono_array(const short *in, float *out, int srclen, int nchannels);
+void src_float_to_mono_array(const float *in, float *out, int srclen, int nchannels);
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -213,7 +214,7 @@ size_t FingerprintExtractor::getVersion()
 
 // -----------------------------------------------------------------------------
 
-void FingerprintExtractor::initForQuery(int freq, int nchannels, int duration )
+void FingerprintExtractor::initForQuery(double freq, int nchannels, int duration )
 {
    m_pPimplData->m_skipPassed = false;
    m_pPimplData->m_processType = PT_FOR_QUERY;
@@ -231,7 +232,7 @@ void FingerprintExtractor::initForQuery(int freq, int nchannels, int duration )
 
 // -----------------------------------------------------------------------------
 
-void FingerprintExtractor::initForFullSubmit(int freq, int nchannels )
+void FingerprintExtractor::initForFullSubmit(double freq, int nchannels )
 {
    m_pPimplData->m_skipPassed = true;
    m_pPimplData->m_processType = PT_FOR_FULLSUBMIT;
@@ -248,7 +249,7 @@ void FingerprintExtractor::initForFullSubmit(int freq, int nchannels )
 // -----------------------------------------------------------------------------
 
 void initCustom( PimplData& pd, 
-                 int freq, int nchannels,
+                 double freq, int nchannels,
                  unsigned int lengthMs, 
                  unsigned int skipMs, 
                  int minUniqueKeys, 
@@ -264,9 +265,11 @@ void initCustom( PimplData& pd,
 
    // ***********************************************************************
    if ( pd.m_pDownsampleState )
-      pd.m_pDownsampleState = src_delete(pd.m_pDownsampleState) ;
-   pd.m_pDownsampleState = src_new (SRC_SINC_FASTEST, 1, NULL) ;
-   pd.m_downsampleData.src_ratio = FDFREQ / freq;
+   {
+      r8bstate_delete(pd.m_pDownsampleState);
+      pd.m_pDownsampleState = NULL;
+   }
+   pd.m_pDownsampleState = r8bstate_new (1, FRAMESIZE, freq, FDFREQ) ;
    // ***********************************************************************
 
    //////////////////////////////////////////////////////////////////////////
@@ -352,7 +355,7 @@ void initCustom( PimplData& pd,
 //
 // repeat until enough blocks processed and enough groups!
 //
-bool FingerprintExtractor::process( const short* pPCM, size_t num_samples, bool end_of_stream )
+bool FingerprintExtractor::process( const float* pPCM, size_t num_samples, bool end_of_stream )
 {
    if ( num_samples == 0 )
       return false;
@@ -363,8 +366,8 @@ bool FingerprintExtractor::process( const short* pPCM, size_t num_samples, bool 
    if ( pd.m_processType == PT_UNKNOWN )
       throw std::runtime_error("Please call initForQuery() or initForFullSubmit() before process()!");
 
-   const short* pSourcePCMIt = pPCM;
-   const short* pSourcePCMIt_end = pPCM + num_samples;
+   const float* pSourcePCMIt = pPCM;
+   const float* pSourcePCMIt_end = pPCM + num_samples;
 
    if ( !pd.m_skipPassed )
    {
@@ -383,7 +386,6 @@ bool FingerprintExtractor::process( const short* pPCM, size_t num_samples, bool 
    }
 
    pair<size_t, size_t> readData(0,0);
-   pd.m_downsampleData.end_of_input = end_of_stream ? 1 : 0;
 
    //////////////////////////////////////////////////////////////////////////
    // PREBUFFER:
@@ -391,26 +393,26 @@ bool FingerprintExtractor::process( const short* pPCM, size_t num_samples, bool 
    {
       // 1. downsample [norm + cb] frames to m_bufferSize - norm/2
       pd.m_floatInData.resize( (pSourcePCMIt_end - pSourcePCMIt) / pd.m_nchannels);
-      src_short_to_float_and_mono_array( pSourcePCMIt, 
-                                         &(pd.m_floatInData[0]), static_cast<int>(pSourcePCMIt_end - pSourcePCMIt), 
-                                         pd.m_nchannels);
+      src_float_to_mono_array( pSourcePCMIt,
+                               &(pd.m_floatInData[0]),
+                               static_cast<int>(pSourcePCMIt_end - pSourcePCMIt),
+                               pd.m_nchannels );
 
-      pd.m_downsampleData.data_in = &(pd.m_floatInData[0]);
-      pd.m_downsampleData.input_frames = static_cast<long>(pd.m_floatInData.size());
+	  size_t frames_used = 0;
 
-      pd.m_downsampleData.data_out = pd.m_pDownsampledCurrIt;
-      pd.m_downsampleData.output_frames = static_cast<long>(pd.m_pEndDownsampledBuf - pd.m_pDownsampledCurrIt);
+	  int frames_gen = r8bstate_resample(pd.m_pDownsampleState,
+										 &(pd.m_floatInData[0]),
+										 static_cast<long>(pd.m_floatInData.size()),
+										 &frames_used,
+										 pd.m_pDownsampledCurrIt,
+										 static_cast<long>(pd.m_pEndDownsampledBuf - pd.m_pDownsampledCurrIt));
 
-      int err = src_process(pd.m_pDownsampleState, &(pd.m_downsampleData));
-      if ( err )
-         throw std::runtime_error( src_strerror(err) );
-
-      pd.m_pDownsampledCurrIt += pd.m_downsampleData.output_frames_gen;
+      pd.m_pDownsampledCurrIt += frames_gen;
 
       if ( pd.m_pDownsampledCurrIt != pd.m_pEndDownsampledBuf )
          return false; // NEED MORE DATA
 
-      pSourcePCMIt += pd.m_downsampleData.input_frames_used * pd.m_nchannels;
+      pSourcePCMIt += frames_used * pd.m_nchannels;
 
       size_t pos = pd.m_downsampledProcessSize;
       size_t window_pos = pd.m_downsampledProcessSize - pd.m_normWindow.size() / 2;
@@ -451,27 +453,27 @@ bool FingerprintExtractor::process( const short* pPCM, size_t num_samples, bool 
       if ( pd.m_floatInData.empty() )
          return false;
 
-      src_short_to_float_and_mono_array( pSourcePCMIt, 
-                                         &(pd.m_floatInData[0]), static_cast<int>(pSourcePCMIt_end - pSourcePCMIt), 
-                                         pd.m_nchannels);
+      src_float_to_mono_array( pSourcePCMIt,
+                               &(pd.m_floatInData[0]),
+                               static_cast<int>(pSourcePCMIt_end - pSourcePCMIt),
+                               pd.m_nchannels );
 
-      pd.m_downsampleData.data_in = &(pd.m_floatInData[0]);
-      pd.m_downsampleData.input_frames = static_cast<long>(pd.m_floatInData.size());
+      size_t frames_used = 0;
 
-      pd.m_downsampleData.data_out = pd.m_pDownsampledCurrIt;
-      pd.m_downsampleData.output_frames = static_cast<long>(pd.m_pEndDownsampledBuf - pd.m_pDownsampledCurrIt);
+      int frames_gen = r8bstate_resample(pd.m_pDownsampleState,
+                                         &(pd.m_floatInData[0]),
+                                         static_cast<long>(pd.m_floatInData.size()),
+                                         &frames_used,
+                                         pd.m_pDownsampledCurrIt,
+                                         static_cast<long>(pd.m_pEndDownsampledBuf - pd.m_pDownsampledCurrIt));
 
-      int err = src_process(pd.m_pDownsampleState, &(pd.m_downsampleData));
-      if ( err )
-         throw std::runtime_error( src_strerror(err) );
-
-      pd.m_pDownsampledCurrIt += pd.m_downsampleData.output_frames_gen;
+      pd.m_pDownsampledCurrIt += frames_gen;
 
       if ( pd.m_pDownsampledCurrIt != pd.m_pEndDownsampledBuf && !end_of_stream )
          return false; // NEED MORE DATA
 
       //pSourcePCMIt += readData.second;
-      pSourcePCMIt += pd.m_downsampleData.input_frames_used * pd.m_nchannels;
+      pSourcePCMIt += frames_used * pd.m_nchannels;
 
       // ********************************************************************
 
@@ -754,29 +756,25 @@ void computeBits( vector<unsigned int>& bits,
 
 // -----------------------------------------------------------------------------
 
-void src_short_to_float_and_mono_array( const short *in, float *out, int srclen, int nchannels )
+void src_float_to_mono_array( const float *in, float *out, int srclen, int nchannels )
 {
    switch ( nchannels )
    {
    case 1:
-      src_short_to_float_array(in, out, srclen);
+      cblas_scopy(srclen, in, 1, out, 1);
       break;
-   case 2:
+   default:
       {
-         // this can be optimized
-         int j = 0;
-         const double div = numeric_limits<short>::max() * nchannels;
-         for ( int i = 0; i < srclen; i += 2, ++j )
+         cblas_scopy(srclen, in, nchannels, out, 1);
+         for(int n = 1; n < nchannels; n++)
          {
-            out[j] = static_cast<float>( static_cast<double>(static_cast<int>(in[i]) + static_cast<int>(in[i+1])) / div );
+            vDSP_vadd(out, 1, in + n, nchannels, out, 1, srclen);
          }
+         float scaleFactor = static_cast<float>(nchannels);
+         vDSP_vsdiv(out, 1, &scaleFactor, out, 1, srclen);
       }
       break;
-
-   default:
-      throw( std::runtime_error("Unsupported number of channels!") );
    }
-
 }
 
 // -----------------------------------------------------------------------------

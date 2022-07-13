@@ -37,15 +37,15 @@ public:
 
    // duration (in seconds!) is optional, but if you want to submit tracks <34 secs
    // it must be provided. 
-   void initForQuery(int freq, int nchannels, int duration = -1);
-   void initForFullSubmit(int freq, int nchannels);
+   void initForQuery(double freq, int nchannels, int duration = -1);
+   void initForFullSubmit(double freq, int nchannels);
 
    // return false if it needs more data, otherwise true
    // IMPORTANT: num_samples specify the size of the *short* array pPCM, that is
    //            the number of samples that are in the buffer. This includes
    //            the stereo samples, i.e.
    //            [L][R][L][R][L][R][L][R] would be num_samples=8
-   bool process(const short* pPCM, size_t num_samples, bool end_of_stream = false);
+   bool process(const float* pPCM, size_t num_samples, bool end_of_stream = false);
 
    // returns pair<NULL, 0> if the data is not ready
    std::pair<const char*, size_t> getFingerprint();
