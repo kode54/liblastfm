@@ -218,42 +218,46 @@ int OptFFT::process(float* pInData, const size_t dataSize)
 
    float scalingFactor = static_cast<float>(FRAMESIZE) / 2.0f;
 
+   pIn_It = m_pIn;
+
    for (size_t i = 0; i < m_maxFrames; ++i)
    {
-      vDSP_ctoz((DSPComplex *)(pIn_It + i * FRAMESIZE), 2, &m_pOut[i], 1, FRAMESIZE / 2);
+      vDSP_ctoz((DSPComplex *)(pIn_It), 2, &m_pOut[i], 1, FRAMESIZE / 2);
       vDSP_DFT_Execute(m_p, m_pOut[i].realp, m_pOut[i].imagp, m_pOut[i].realp, m_pOut[i].imagp);
 
       // scaling (?)
       vDSP_vsdiv(m_pOut[i].realp, 1, &scalingFactor, m_pOut[i].realp, 1, FRAMESIZE);
       vDSP_vsdiv(m_pOut[i].imagp, 1, &scalingFactor, m_pOut[i].imagp, 1, FRAMESIZE);
+
+      pIn_It += FRAMESIZE;
    }
 
    int frameStart;
    unsigned int outBlocStart;
    unsigned int outBlocEnd;
 
-    for (int i = 0; i < nFrames; ++i) 
+   for (int i = 0; i < nFrames; ++i) 
    {
        // compute bands
-       for (unsigned int j = 0; j < Filter::NBANDS; j++) 
+      for (unsigned int j = 0; j < Filter::NBANDS; j++) 
       {
          outBlocStart = m_powTable[j];
          outBlocEnd   = m_powTable[j+1];
 
-           m_pFrames[i][j] = 0;
+         m_pFrames[i][j] = 0;
 
-           // WARNING: We're double counting the last one here.
-           // this bug is to match matlab's implementation bug in power2band.m
+         // WARNING: We're double counting the last one here.
+         // this bug is to match matlab's implementation bug in power2band.m
          unsigned int end_k = outBlocEnd + static_cast<unsigned int>(MINCOEF);
-           for (unsigned int k = outBlocStart + static_cast<unsigned int>(MINCOEF); k <= end_k; k++) 
+         for (unsigned int k = outBlocStart + static_cast<unsigned int>(MINCOEF); k <= end_k; k++) 
          {
-               m_pFrames[i][j] += m_pOut[i].realp[k] * m_pOut[i].realp[k] +
+            m_pFrames[i][j] += m_pOut[i].realp[k] * m_pOut[i].realp[k] +
                                m_pOut[i].imagp[k] * m_pOut[i].imagp[k];
-           }
+         }
 
-           // WARNING: if we change the k<=end to k<end above, we need to change the following line
-           m_pFrames[i][j] /= static_cast<float>(outBlocEnd - outBlocStart + 1);        
-       }   
+         // WARNING: if we change the k<=end to k<end above, we need to change the following line
+         m_pFrames[i][j] /= static_cast<float>(outBlocEnd - outBlocStart + 1); 
+      }
    }
 
    return nFrames;

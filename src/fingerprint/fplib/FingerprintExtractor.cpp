@@ -357,7 +357,7 @@ void initCustom( PimplData& pd,
 //
 bool FingerprintExtractor::process( const float* pPCM, size_t num_samples, bool end_of_stream )
 {
-   if ( num_samples == 0 )
+   if ( num_samples == 0 && !end_of_stream )
       return false;
 
    // easier read
@@ -392,27 +392,41 @@ bool FingerprintExtractor::process( const float* pPCM, size_t num_samples, bool 
    if ( !pd.m_preBufferPassed )
    {
       // 1. downsample [norm + cb] frames to m_bufferSize - norm/2
-      pd.m_floatInData.resize( (pSourcePCMIt_end - pSourcePCMIt) / pd.m_nchannels);
-      src_float_to_mono_array( pSourcePCMIt,
-                               &(pd.m_floatInData[0]),
-                               static_cast<int>(pSourcePCMIt_end - pSourcePCMIt),
-                               pd.m_nchannels );
+      if(pSourcePCMIt)
+      {
+         pd.m_floatInData.resize( (pSourcePCMIt_end - pSourcePCMIt) / pd.m_nchannels);
+         src_float_to_mono_array( pSourcePCMIt,
+                                  &(pd.m_floatInData[0]),
+                                  static_cast<int>(pSourcePCMIt_end - pSourcePCMIt),
+                                  pd.m_nchannels );
 
-	  size_t frames_used = 0;
+         size_t frames_used = 0;
 
-	  int frames_gen = r8bstate_resample(pd.m_pDownsampleState,
-										 &(pd.m_floatInData[0]),
-										 static_cast<long>(pd.m_floatInData.size()),
-										 &frames_used,
-										 pd.m_pDownsampledCurrIt,
-										 static_cast<long>(pd.m_pEndDownsampledBuf - pd.m_pDownsampledCurrIt));
+         int frames_gen = r8bstate_resample( pd.m_pDownsampleState,
+                                             &(pd.m_floatInData[0]),
+                                             static_cast<long>(pd.m_floatInData.size()),
+                                             &frames_used,
+                                             pd.m_pDownsampledCurrIt,
+                                             static_cast<long>(pd.m_pEndDownsampledBuf - pd.m_pDownsampledCurrIt));
 
-      pd.m_pDownsampledCurrIt += frames_gen;
+         pd.m_pDownsampledCurrIt += frames_gen;
 
-      if ( pd.m_pDownsampledCurrIt != pd.m_pEndDownsampledBuf )
-         return false; // NEED MORE DATA
+         if ( pd.m_pDownsampledCurrIt != pd.m_pEndDownsampledBuf )
+            return false; // NEED MORE DATA
 
-      pSourcePCMIt += frames_used * pd.m_nchannels;
+         pSourcePCMIt += frames_used * pd.m_nchannels;
+      }
+      else
+      {
+         int frames_gen = r8bstate_flush( pd.m_pDownsampleState,
+                                          pd.m_pDownsampledCurrIt,
+                                          static_cast<long>(pd.m_pEndDownsampledBuf - pd.m_pDownsampledCurrIt));
+
+         pd.m_pDownsampledCurrIt += frames_gen;
+
+         if ( pd.m_pDownsampledCurrIt != pd.m_pEndDownsampledBuf )
+            return false; // FLUSHED IT ALL
+      }
 
       size_t pos = pd.m_downsampledProcessSize;
       size_t window_pos = pd.m_downsampledProcessSize - pd.m_normWindow.size() / 2;
@@ -447,33 +461,47 @@ bool FingerprintExtractor::process( const float* pPCM, size_t num_samples, bool 
          pd.m_pDownsampledCurrIt = pd.m_pDownsampledPCM + (pd.m_compensateBufferSize + (pd.m_normWindow.size() / 2));
       }
 
-      // 2. read m_bufferSize frames to cb + norm/2
-      pd.m_floatInData.resize( (pSourcePCMIt_end - pSourcePCMIt) / pd.m_nchannels);
+      if (pSourcePCMIt)
+      {
+         // 2. read m_bufferSize frames to cb + norm/2
+         pd.m_floatInData.resize( (pSourcePCMIt_end - pSourcePCMIt) / pd.m_nchannels);
 
-      if ( pd.m_floatInData.empty() )
-         return false;
+         if ( pd.m_floatInData.empty() )
+            return false;
 
-      src_float_to_mono_array( pSourcePCMIt,
-                               &(pd.m_floatInData[0]),
-                               static_cast<int>(pSourcePCMIt_end - pSourcePCMIt),
-                               pd.m_nchannels );
+         src_float_to_mono_array( pSourcePCMIt,
+                                  &(pd.m_floatInData[0]),
+                                  static_cast<int>(pSourcePCMIt_end - pSourcePCMIt),
+                                  pd.m_nchannels );
 
-      size_t frames_used = 0;
+         size_t frames_used = 0;
 
-      int frames_gen = r8bstate_resample(pd.m_pDownsampleState,
-                                         &(pd.m_floatInData[0]),
-                                         static_cast<long>(pd.m_floatInData.size()),
-                                         &frames_used,
-                                         pd.m_pDownsampledCurrIt,
-                                         static_cast<long>(pd.m_pEndDownsampledBuf - pd.m_pDownsampledCurrIt));
+         int frames_gen = r8bstate_resample( pd.m_pDownsampleState,
+                                             &(pd.m_floatInData[0]),
+                                             static_cast<long>(pd.m_floatInData.size()),
+                                             &frames_used,
+                                             pd.m_pDownsampledCurrIt,
+                                             static_cast<long>(pd.m_pEndDownsampledBuf - pd.m_pDownsampledCurrIt));
 
-      pd.m_pDownsampledCurrIt += frames_gen;
+         pd.m_pDownsampledCurrIt += frames_gen;
 
-      if ( pd.m_pDownsampledCurrIt != pd.m_pEndDownsampledBuf && !end_of_stream )
-         return false; // NEED MORE DATA
+         if ( pd.m_pDownsampledCurrIt != pd.m_pEndDownsampledBuf && !end_of_stream )
+            return false; // NEED MORE DATA
 
-      //pSourcePCMIt += readData.second;
-      pSourcePCMIt += frames_used * pd.m_nchannels;
+         //pSourcePCMIt += readData.second;
+         pSourcePCMIt += frames_used * pd.m_nchannels;
+      }
+      else
+      {
+         int frames_gen = r8bstate_flush( pd.m_pDownsampleState,
+                                          pd.m_pDownsampledCurrIt,
+                                          static_cast<long>(pd.m_pEndDownsampledBuf - pd.m_pDownsampledCurrIt) );
+         pd.m_pDownsampledCurrIt += frames_gen;
+
+         if ( pd.m_pDownsampledCurrIt != pd.m_pEndDownsampledBuf &&
+              !end_of_stream )
+            return false;
+      }
 
       // ********************************************************************
 
